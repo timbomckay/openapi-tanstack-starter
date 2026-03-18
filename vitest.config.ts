@@ -1,6 +1,6 @@
-import { defineConfig } from 'vitest/config'
-import react from '@vitejs/plugin-react-swc'
-import path from 'path'
+import react from '@vitejs/plugin-react-swc';
+import path from 'path';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   plugins: [react()],
@@ -13,12 +13,7 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
       include: ['src/**/*.{ts,tsx}'],
-      exclude: [
-        'src/api/generated/**',
-        'src/routeTree.gen.ts',
-        'src/test/**',
-        'src/main.tsx',
-      ],
+      exclude: ['src/api/generated/**', 'src/routeTree.gen.ts', 'src/test/**', 'src/main.tsx'],
     },
   },
   resolve: {
@@ -26,4 +21,4 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-})
+});

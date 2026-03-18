@@ -7,8 +7,9 @@ node_modules/
 dist/
 dist-ssr/
 
-# Generated files — run `npm run api:generate` after clone
-src/api/generated/
+# Generated files — run `npm run api:generate:all` after clone
+# One generated/ dir per API — matched by glob
+src/api/*/generated/
 
 # TanStack Router generated route tree
 src/routeTree.gen.ts
