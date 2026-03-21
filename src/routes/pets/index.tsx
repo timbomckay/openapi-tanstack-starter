@@ -28,7 +28,10 @@ export const Route = createFileRoute('/pets/')({
 
 type PetStatus = 'available' | 'pending' | 'sold';
 
-const statusVariantMap: Record<PetStatus, 'default' | 'secondary' | 'destructive'> = {
+const statusVariantMap: Record<
+  PetStatus,
+  'default' | 'secondary' | 'destructive'
+> = {
   available: 'default',
   pending: 'secondary',
   sold: 'destructive',
@@ -39,13 +42,17 @@ const columns: ColumnDef<Pet>[] = [
     accessorKey: 'id',
     header: 'ID',
     cell: ({ row }) => (
-      <span className="font-mono text-xs text-muted-foreground">{row.getValue('id')}</span>
+      <span className="font-mono text-xs text-muted-foreground">
+        {row.getValue('id')}
+      </span>
     ),
   },
   {
     accessorKey: 'name',
     header: 'Name',
-    cell: ({ row }) => <span className="font-medium">{row.getValue('name')}</span>,
+    cell: ({ row }) => (
+      <span className="font-medium">{row.getValue('name')}</span>
+    ),
   },
   {
     id: 'category',
@@ -65,7 +72,9 @@ const columns: ColumnDef<Pet>[] = [
     cell: ({ row }) => {
       const status = row.getValue<PetStatus>('status');
       return status ? (
-        <Badge variant={statusVariantMap[status] ?? 'secondary'}>{status}</Badge>
+        <Badge variant={statusVariantMap[status] ?? 'secondary'}>
+          {status}
+        </Badge>
       ) : null;
     },
   },
@@ -96,7 +105,10 @@ const columns: ColumnDef<Pet>[] = [
       <Link
         to="/pets/$petId"
         params={{ petId: String(row.original.id) }}
-        className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), 'size-7 p-0')}
+        className={cn(
+          buttonVariants({ variant: 'ghost', size: 'sm' }),
+          'size-7 p-0',
+        )}
       >
         <ArrowSquareOutIcon className="size-3.5" />
       </Link>
@@ -116,7 +128,9 @@ function PetsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Pets</h1>
-          <p className="text-muted-foreground">Browse and manage all pets in the store.</p>
+          <p className="text-muted-foreground">
+            Browse and manage all pets in the store.
+          </p>
         </div>
         <Link to="/pets/new" className={buttonVariants()}>
           <PlusCircleIcon className="mr-2 size-4" />

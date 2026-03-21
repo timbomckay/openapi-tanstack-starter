@@ -20,12 +20,20 @@ function PetDetailPage() {
     data: pet,
     isLoading,
     isError,
-  } = useQuery(getPetByIdOptions({ client: petstoreClient, path: { petId: Number(petId) } }));
+  } = useQuery(
+    getPetByIdOptions({
+      client: petstoreClient,
+      path: { petId: Number(petId) },
+    }),
+  );
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Link to="/pets" className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
+        <Link
+          to="/pets"
+          className={buttonVariants({ variant: 'ghost', size: 'sm' })}
+        >
           <ArrowLeftIcon className="mr-2 size-4" />
           Back to pets
         </Link>
@@ -74,7 +82,9 @@ function PetDetailPage() {
           </div>
 
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Category</p>
+            <p className="text-sm font-medium text-muted-foreground">
+              Category
+            </p>
             {isLoading ? (
               <Skeleton className="h-5 w-32" />
             ) : (
@@ -83,7 +93,9 @@ function PetDetailPage() {
           </div>
 
           <div>
-            <p className="mb-1.5 text-sm font-medium text-muted-foreground">Tags</p>
+            <p className="mb-1.5 text-sm font-medium text-muted-foreground">
+              Tags
+            </p>
             {isLoading ? (
               <div className="flex gap-2">
                 <Skeleton className="h-5 w-16" />
@@ -104,7 +116,9 @@ function PetDetailPage() {
           </div>
 
           <div>
-            <p className="mb-1.5 text-sm font-medium text-muted-foreground">Photos</p>
+            <p className="mb-1.5 text-sm font-medium text-muted-foreground">
+              Photos
+            </p>
             {isLoading ? (
               <Skeleton className="h-5 w-48" />
             ) : pet?.photoUrls?.length ? (

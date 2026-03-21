@@ -1,14 +1,10 @@
 import type { UserConfig } from '@hey-api/openapi-ts';
 
 /**
- * All API code generation configs.
+ * All API code generation configs. Run: npm run api:generate
  *
  * Each entry generates one `src/api/<name>/generated/` directory.
- * Run: npm run api:generate
- *
- * Note: `defineConfig` from Hey API v0.76 does not type array syntax,
- * so configs are exported as a plain typed array and run via
- * scripts/api-generate.ts (which calls `createClient` directly).
+ * Hey API v0.94 CLI handles array configs natively.
  */
 const configs: UserConfig[] = [
   /**
@@ -18,7 +14,12 @@ const configs: UserConfig[] = [
   {
     input: 'https://petstore3.swagger.io/api/v3/openapi.json',
     output: { path: 'src/api/petstore/generated', clean: true },
-    plugins: ['@hey-api/typescript', 'zod', '@tanstack/react-query', '@hey-api/client-fetch'],
+    plugins: [
+      '@hey-api/typescript',
+      'zod',
+      '@tanstack/react-query',
+      '@hey-api/client-fetch',
+    ],
   },
 
   /**

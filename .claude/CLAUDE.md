@@ -8,7 +8,7 @@
 
 | Layer        | Tool                                            | Docs                                   |
 | ------------ | ----------------------------------------------- | -------------------------------------- |
-| Build        | **Vite 6** + `@vitejs/plugin-react-swc`         | https://vitejs.dev                     |
+| Build        | **Vite 8** + `@vitejs/plugin-react-swc`         | https://vitejs.dev                     |
 | Language     | **TypeScript 5** (strict)                       | https://www.typescriptlang.org         |
 | UI           | **React 19**                                    | https://react.dev                      |
 | Components   | **shadcn/ui** `base-vega` style + **Base UI**   | https://ui.shadcn.com                  |
@@ -17,11 +17,11 @@
 | Server state | **TanStack Query v5**                           | https://tanstack.com/query             |
 | Forms        | **TanStack Form v1**                            | https://tanstack.com/form              |
 | Tables       | **TanStack Table v8**                           | https://tanstack.com/table             |
-| API client   | **Hey API** (`@hey-api/openapi-ts` v0.76)       | https://heyapi.dev                     |
-| Validation   | **Zod v3**                                      | https://zod.dev                        |
-| Testing      | **Vitest v3** + Testing Library                 | https://vitest.dev                     |
-| Linting      | **oxlint**                                      | https://oxc.rs/docs/guide/usage/linter |
-| Font         | Geist Variable (`@fontsource-variable/geist`)   | —                                      |
+| API client   | **Hey API** (`@hey-api/openapi-ts` v0.94)       | https://heyapi.dev                     |
+| Validation   | **Zod v4**                                      | https://zod.dev                        |
+| Testing      | **Vitest v4** + Testing Library                 | https://vitest.dev                     |
+| Linting      | **oxlint v1**                                   | https://oxc.rs/docs/guide/usage/linter |
+| Font         | Inter Variable (`@fontsource-variable/inter`)   | —                                      |
 
 ---
 
@@ -151,12 +151,16 @@ const queryClient = useQueryClient();
 const mutation = useMutation({
   ...addPetMutation({ client: petstoreClient }),
   onSuccess: () => {
-    void queryClient.invalidateQueries({ queryKey: [{ _id: 'findPetsByStatus' }] });
+    void queryClient.invalidateQueries({
+      queryKey: [{ _id: 'findPetsByStatus' }],
+    });
   },
 });
 
 // Call:
-mutation.mutate({ body: { name: 'Buddy', photoUrls: [], status: 'available' } });
+mutation.mutate({
+  body: { name: 'Buddy', photoUrls: [], status: 'available' },
+});
 ```
 
 ### Building a form (TanStack Form + Zod)
@@ -321,10 +325,6 @@ const columns: ColumnDef<MyRow>[] = [
 3. **Generate** — run `npm run api:generate`
 4. **Wire up** — add `import '@/api/<name>/client'` to `src/main.tsx`
 5. **Use in routes** — import from `@/api/<name>/generated/@tanstack/react-query.gen` and pass the client explicitly
-
-> **Note:** `npm run api:generate` calls `scripts/api-generate.ts` which uses `createClient` directly
-> (not the `openapi-ts` CLI). This is intentional: the Hey API v0.76 CLI uses c12+defu internally
-> which does not preserve top-level arrays, so the CLI can't be used with multi-API array configs.
 
 ---
 

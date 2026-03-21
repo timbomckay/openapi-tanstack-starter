@@ -1,7 +1,7 @@
 import { PawPrintIcon } from '@phosphor-icons/react';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { createRootRoute, Link, Outlet } from '@tanstack/react-router';
-import { TanStackRouterDevtools } from '@tanstack/router-devtools';
+import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 
 import { Toaster } from '@/components/ui/sonner';
 
@@ -11,7 +11,7 @@ export const Route = createRootRoute({
 
 function RootLayout() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-24">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
         <nav className="container mx-auto flex h-14 items-center gap-6 px-4">
           <Link to="/" className="flex items-center gap-2 font-semibold">
@@ -24,6 +24,12 @@ function RootLayout() {
               className="text-muted-foreground transition-colors hover:text-foreground [&.active]:font-medium [&.active]:text-foreground"
             >
               Pets
+            </Link>
+            <Link
+              to="/demo"
+              className="text-muted-foreground transition-colors hover:text-foreground [&.active]:font-medium [&.active]:text-foreground"
+            >
+              Form demo
             </Link>
           </div>
         </nav>

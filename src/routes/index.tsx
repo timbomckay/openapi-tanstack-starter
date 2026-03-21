@@ -1,4 +1,8 @@
-import { PlusCircleIcon, PawPrintIcon, ShoppingBagIcon } from '@phosphor-icons/react';
+import {
+  PlusCircleIcon,
+  PawPrintIcon,
+  ShoppingBagIcon,
+} from '@phosphor-icons/react';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
 
@@ -6,7 +10,13 @@ import { petstoreClient } from '@/api/petstore/client';
 import { findPetsByStatusOptions } from '@/api/petstore/generated/@tanstack/react-query.gen';
 import { Badge } from '@/components/ui/badge';
 import { buttonVariants } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
@@ -16,19 +26,40 @@ export const Route = createFileRoute('/')({
 
 function DashboardPage() {
   const availableQuery = useQuery(
-    findPetsByStatusOptions({ client: petstoreClient, query: { status: 'available' } }),
+    findPetsByStatusOptions({
+      client: petstoreClient,
+      query: { status: 'available' },
+    }),
   );
   const pendingQuery = useQuery(
-    findPetsByStatusOptions({ client: petstoreClient, query: { status: 'pending' } }),
+    findPetsByStatusOptions({
+      client: petstoreClient,
+      query: { status: 'pending' },
+    }),
   );
   const soldQuery = useQuery(
-    findPetsByStatusOptions({ client: petstoreClient, query: { status: 'sold' } }),
+    findPetsByStatusOptions({
+      client: petstoreClient,
+      query: { status: 'sold' },
+    }),
   );
 
   const stats = [
-    { title: 'Available', count: availableQuery.data?.length, loading: availableQuery.isLoading },
-    { title: 'Pending', count: pendingQuery.data?.length, loading: pendingQuery.isLoading },
-    { title: 'Sold', count: soldQuery.data?.length, loading: soldQuery.isLoading },
+    {
+      title: 'Available',
+      count: availableQuery.data?.length,
+      loading: availableQuery.isLoading,
+    },
+    {
+      title: 'Pending',
+      count: pendingQuery.data?.length,
+      loading: pendingQuery.isLoading,
+    },
+    {
+      title: 'Sold',
+      count: soldQuery.data?.length,
+      loading: soldQuery.isLoading,
+    },
   ] as const;
 
   return (
@@ -76,7 +107,9 @@ function DashboardPage() {
               <PawPrintIcon className="size-5" />
               Pets
             </CardTitle>
-            <CardDescription>Browse and manage all pets in the store.</CardDescription>
+            <CardDescription>
+              Browse and manage all pets in the store.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Link to="/pets" className={buttonVariants({ variant: 'outline' })}>
@@ -91,7 +124,9 @@ function DashboardPage() {
               <ShoppingBagIcon className="size-5" />
               Add New Pet
             </CardTitle>
-            <CardDescription>Register a new pet with name, status, and tags.</CardDescription>
+            <CardDescription>
+              Register a new pet with name, status, and tags.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Link to="/pets/new" className={cn(buttonVariants())}>

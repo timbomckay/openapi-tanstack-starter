@@ -4,30 +4,26 @@ import {
   FieldError,
   FieldLabel,
 } from '@/components/ui/field';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { useFieldContext } from '@/hooks/form-context';
 
-interface TextFieldProps {
+interface TextareaFieldProps {
   label: string;
   placeholder?: string;
-  type?: string;
   required?: boolean;
   hint?: string;
-  disabled?: boolean;
   readonly?: boolean;
   hideLabel?: boolean;
 }
 
-export function TextField({
+export function TextareaField({
   label,
   placeholder,
-  type = 'text',
   required,
   hint,
-  disabled,
   readonly,
   hideLabel,
-}: TextFieldProps) {
+}: TextareaFieldProps) {
   const field = useFieldContext<string>();
   const errors = field.state.meta.errors
     .filter(Boolean)
@@ -42,14 +38,12 @@ export function TextField({
         {label}
         {required && <span className="text-destructive"> *</span>}
       </FieldLabel>
-      <Input
+      <Textarea
         id={field.name}
-        type={type}
         value={field.state.value}
         onBlur={field.handleBlur}
         onChange={(e) => field.handleChange(e.target.value)}
         placeholder={placeholder}
-        disabled={disabled}
         readOnly={readonly}
         aria-invalid={errors.length > 0}
       />

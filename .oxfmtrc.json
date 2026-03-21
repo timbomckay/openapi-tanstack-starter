@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
   "singleQuote": true,
+  "printWidth": 80,
   "sortTailwindcss": {
     "stylesheet": "src/index.css",
     "functions": ["cn", "clsx", "cva", "buttonVariants"]
