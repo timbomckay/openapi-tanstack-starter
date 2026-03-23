@@ -8,7 +8,7 @@
 
 | Layer        | Tool                                            | Docs                                   |
 | ------------ | ----------------------------------------------- | -------------------------------------- |
-| Build        | **Vite 8** + `@vitejs/plugin-react-swc`         | https://vitejs.dev                     |
+| Build        | **Vite 8** + `@vitejs/plugin-react`             | https://vitejs.dev                     |
 | Language     | **TypeScript 5** (strict)                       | https://www.typescriptlang.org         |
 | UI           | **React 19**                                    | https://react.dev                      |
 | Components   | **shadcn/ui** `base-vega` style + **Base UI**   | https://ui.shadcn.com                  |

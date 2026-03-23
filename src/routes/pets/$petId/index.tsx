@@ -1,4 +1,8 @@
-import { ArrowLeftIcon, TagIcon } from '@phosphor-icons/react';
+import {
+  ArrowLeftIcon,
+  PencilSimpleIcon,
+  TagIcon,
+} from '@phosphor-icons/react';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
 
@@ -9,7 +13,7 @@ import { buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export const Route = createFileRoute('/pets/$petId')({
+export const Route = createFileRoute('/pets/$petId/')({
   component: PetDetailPage,
 });
 
@@ -48,26 +52,39 @@ function PetDetailPage() {
       <Card>
         <CardHeader>
           <div className="flex items-start justify-between">
-            {isLoading ? (
-              <Skeleton className="h-8 w-48" />
-            ) : (
-              <CardTitle className="text-2xl">{pet?.name}</CardTitle>
-            )}
-            {isLoading ? (
-              <Skeleton className="h-6 w-20" />
-            ) : pet?.status ? (
-              <Badge
-                variant={
-                  pet.status === 'available'
-                    ? 'default'
-                    : pet.status === 'pending'
-                      ? 'secondary'
-                      : 'destructive'
-                }
+            <div className="flex items-center gap-3">
+              {isLoading ? (
+                <Skeleton className="h-8 w-48" />
+              ) : (
+                <CardTitle className="text-2xl">{pet?.name}</CardTitle>
+              )}
+              {isLoading ? (
+                <Skeleton className="h-6 w-20" />
+              ) : pet?.status ? (
+                <Badge
+                  variant={
+                    pet.status === 'available'
+                      ? 'default'
+                      : pet.status === 'pending'
+                        ? 'secondary'
+                        : 'destructive'
+                  }
+                >
+                  {pet.status}
+                </Badge>
+              ) : null}
+            </div>
+
+            {!isLoading && !isError && (
+              <Link
+                to="/pets/$petId/edit"
+                params={{ petId }}
+                className={buttonVariants({ variant: 'outline', size: 'sm' })}
               >
-                {pet.status}
-              </Badge>
-            ) : null}
+                <PencilSimpleIcon className="mr-2 size-4" />
+                Edit
+              </Link>
+            )}
           </div>
         </CardHeader>
 

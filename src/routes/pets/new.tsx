@@ -2,13 +2,11 @@ import { ArrowLeftIcon } from '@phosphor-icons/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
-import * as z from 'zod';
 
 import { petstoreClient } from '@/api/petstore/client';
 import { addPetMutation } from '@/api/petstore/generated/@tanstack/react-query.gen';
 import { zPet } from '@/api/petstore/generated/zod.gen';
 import { FormBuilder } from '@/components/form/form-builder';
-import { zodToFields } from '@/components/form/zod-to-fields';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Card,
@@ -19,27 +17,10 @@ import {
 } from '@/components/ui/card';
 import { useFieldForm } from '@/hooks/use-field-form';
 
+import { petFields as fields } from './-pet-fields';
+
 export const Route = createFileRoute('/pets/new')({
   component: NewPetPage,
-});
-
-const fields = zodToFields(zPet, {
-  name: {
-    placeholder: 'Fluffy',
-    validators: {
-      onChange: ({ value }) => {
-        const r = z
-          .string()
-          .min(1, 'Name is required')
-          .max(100, 'Name is too long')
-          .safeParse(value);
-        return r.success ? undefined : r.error.issues[0]?.message;
-      },
-    },
-  },
-  status: { required: true, defaultValue: 'available' },
-  photoUrls: { label: 'Photo URLs', addLabel: 'Add photo URL' },
-  tags: { addLabel: 'Add tag' },
 });
 
 function NewPetPage() {
