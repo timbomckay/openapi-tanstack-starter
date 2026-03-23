@@ -83,6 +83,18 @@ function inferProps(
     return { options, defaultValue: optional ? undefined : values[0] };
   }
 
+  if (inner instanceof z.ZodObject) {
+    const subFields = zodToFields(inner as z.ZodObject<z.ZodRawShape>);
+    if (subFields.length === 0) return null;
+    const defaultValue = Object.fromEntries(
+      subFields.map((sf) => [
+        sf.name,
+        sf.defaultValue ?? (sf.multiple ? [] : ''),
+      ]),
+    );
+    return { type: 'group', defaultValue, fields: subFields };
+  }
+
   if (inner instanceof z.ZodArray) {
     const elemSchema = (inner as z.ZodArray<AnyZodType>).element;
     const { inner: elemInner, optional: elemOptional } = unwrap(

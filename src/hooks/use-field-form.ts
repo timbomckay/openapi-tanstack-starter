@@ -14,11 +14,16 @@ import { useAppForm } from './use-app-form';
 export function deriveDefaults(
   fields: (FieldDef | RenderItem)[],
 ): Record<string, unknown> {
-  return Object.fromEntries(
-    fields
-      .filter((f): f is FieldDef => 'name' in f)
-      .map((f) => [f.name, f.defaultValue ?? (f.multiple ? [] : '')]),
-  );
+  const result: Record<string, unknown> = {};
+  for (const f of fields) {
+    if (!('name' in f)) continue;
+    if (f.type === 'group' && f.fields) {
+      result[f.name] = deriveDefaults(f.fields);
+    } else {
+      result[f.name] = f.defaultValue ?? (f.multiple ? [] : '');
+    }
+  }
+  return result;
 }
 
 /** Minimal formApi surface exposed to onSubmit — enough to gate API calls. */

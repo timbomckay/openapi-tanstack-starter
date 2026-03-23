@@ -15,7 +15,8 @@ export type FieldType =
   | 'checkbox'
   | 'switch'
   | 'date'
-  | 'repeater';
+  | 'repeater'
+  | 'group';
 
 export interface FieldOption {
   value: string;

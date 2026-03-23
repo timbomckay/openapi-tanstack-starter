@@ -101,6 +101,7 @@ function EditPetForm({ pet, petId }: { pet: Pet; petId: string }) {
     defaultValues: {
       id: pet.id,
       name: pet.name ?? '',
+      category: pet.category ?? { id: undefined, name: '' },
       photoUrls: pet.photoUrls ?? [],
       tags: (pet.tags ?? []) as { id?: bigint; name?: string }[],
       status: pet.status ?? ('available' as const),

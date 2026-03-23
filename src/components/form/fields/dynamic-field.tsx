@@ -205,6 +205,9 @@ export function DynamicField({
       // Repeater is handled upstream by FormBuilder (needs mode="array" + form instance).
       // DynamicField should never be asked to render one directly.
       return null;
+    case 'group':
+      // Group is handled upstream by FormBuilder (needs form instance + sub-field rendering).
+      return null;
     default:
       return assertNever(resolvedType);
   }

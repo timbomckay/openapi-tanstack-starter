@@ -1,6 +1,6 @@
 import { Fragment, type ReactNode } from 'react';
 
-import { FieldGroup } from '@/components/ui/field';
+import { FieldGroup, FieldLegend, FieldSet } from '@/components/ui/field';
 
 import type { FieldCondition, FieldDef, RenderItem } from './field-def';
 
@@ -215,6 +215,54 @@ export function FormBuilder({
           fieldDef.validators?.onBlurAsync)
             ? 300
             : undefined);
+
+        if (fieldDef.type === 'group') {
+          const { name: groupName, label, fields: subFields = [] } = fieldDef;
+          return (
+            <FieldSet
+              key={groupName}
+              className="gap-3 rounded-lg border p-3 pt-2"
+            >
+              {label && (
+                <FieldLegend variant="label" className="-ml-1 px-1">
+                  {label}
+                </FieldLegend>
+              )}
+              {subFields.map((subField) => {
+                const fullName = `${groupName}.${subField.name}` as never;
+                const subValidators = buildValidators(subField);
+                const subAsyncDebounceMs =
+                  subField.asyncDebounceMs ??
+                  ((subField.validators?.onChangeAsync ??
+                  subField.validators?.onBlurAsync)
+                    ? 300
+                    : undefined);
+                return (
+                  <form.AppField
+                    key={subField.name}
+                    name={fullName}
+                    validators={subValidators}
+                    asyncDebounceMs={subAsyncDebounceMs}
+                  >
+                    {(f: {
+                      DynamicField: (p: {
+                        field: FieldDef;
+                        threshold?: number;
+                        comboboxThreshold?: number;
+                      }) => ReactNode;
+                    }) => (
+                      <f.DynamicField
+                        field={subField}
+                        threshold={threshold}
+                        comboboxThreshold={comboboxThreshold}
+                      />
+                    )}
+                  </form.AppField>
+                );
+              })}
+            </FieldSet>
+          );
+        }
 
         if (fieldDef.type === 'repeater') {
           const repeaterCondition = fieldDef.condition;
