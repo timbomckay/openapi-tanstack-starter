@@ -16,7 +16,8 @@ export type FieldType =
   | 'switch'
   | 'date'
   | 'repeater'
-  | 'group';
+  | 'group'
+  | 'unsupported';
 
 export interface FieldOption {
   value: string;

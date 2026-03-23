@@ -202,8 +202,21 @@ export function zodToFields<T extends z.ZodRawShape>(
     const { inner, optional } = unwrap(rawSchema as AnyZodType);
     const inferred = inferProps(inner, optional);
 
-    // Skip if we can't map the type and no explicit type/options override is provided
-    if (inferred === null && !override?.type && !override?.options) continue;
+    // If the type can't be inferred and no explicit override is provided, emit an
+    // unsupported placeholder so developers know a field was skipped rather than
+    // silently omitting it. Use skip: true in overrides to suppress deliberately.
+    if (inferred === null && !override?.type && !override?.options) {
+      const { skip: _skip, ...rest } = override ?? {};
+      fields.push({
+        name,
+        label: labelFromName(name),
+        required: !optional,
+        type: 'unsupported',
+        hint: inner.constructor.name,
+        ...rest,
+      });
+      continue;
+    }
 
     const { skip: _skip, ...rest } = override ?? {};
 

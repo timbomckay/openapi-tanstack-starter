@@ -8,7 +8,7 @@ import { routeTree } from './routeTree.gen';
 // Configure Hey API client base URLs before any queries run.
 // Add one import per API — each configures its own generated default client.
 import './api/petstore/client';
-// import './api/nba/client'   // ← uncomment when NBA API is ready
+// import './api/example/client'   // ← uncomment when your API is ready
 import './index.css';
 
 // TanStack Query client — tweak staleTime / gcTime to taste

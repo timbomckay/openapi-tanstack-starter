@@ -1,4 +1,4 @@
-# NBA Client — Project Guide
+# OpenAPI TanStack Starter — Project Guide
 
 > This file is loaded automatically into every Claude session. Keep it accurate and concise.
 
@@ -38,7 +38,7 @@ src/
 │   │       ├── zod.gen.ts         # Zod schemas
 │   │       └── @tanstack/
 │   │           └── react-query.gen.ts
-│   └── nba/                       # ← placeholder: fill in when API is ready
+│   └── example/                   # ← placeholder: fill in when API is ready
 │       └── client.ts
 ├── components/
 │   ├── ui/                        # shadcn components (added via CLI, do not hand-edit)
@@ -321,7 +321,7 @@ const columns: ColumnDef<MyRow>[] = [
 ## Adding a new API
 
 1. **Config** — uncomment (or add) an entry in `openapi-ts.config.ts`, set `input` and `output.path`
-2. **Client** — copy `src/api/nba/client.ts`, uncomment and update `baseUrl`, rename the export
+2. **Client** — copy `src/api/example/client.ts`, uncomment and update `baseUrl`, rename the export
 3. **Generate** — run `npm run api:generate`
 4. **Wire up** — add `import '@/api/<name>/client'` to `src/main.tsx`
 5. **Use in routes** — import from `@/api/<name>/generated/@tanstack/react-query.gen` and pass the client explicitly

@@ -23,15 +23,15 @@ const configs: UserConfig[] = [
   },
 
   /**
-   * NBA API (placeholder — activate when spec is available)
+   * Your API (placeholder — activate when spec is available)
    * 1. Uncomment this block and replace `input` with your OpenAPI spec URL
-   * 2. Update `baseUrl` in src/api/nba/client.ts
-   * 3. Uncomment the nbaClient lines in src/api/nba/client.ts
-   * 4. Import '@/api/nba/client' in src/main.tsx
+   * 2. Update `baseUrl` in src/api/example/client.ts
+   * 3. Uncomment the exampleClient lines in src/api/example/client.ts
+   * 4. Import '@/api/example/client' in src/main.tsx
    */
   // {
-  //   input: 'https://your-nba-api.com/openapi.json',
-  //   output: { path: 'src/api/nba/generated', clean: true },
+  //   input: 'https://your-api.com/openapi.json',
+  //   output: { path: 'src/api/example/generated', clean: true },
   //   plugins: [
   //     '@hey-api/typescript',
   //     'zod',
