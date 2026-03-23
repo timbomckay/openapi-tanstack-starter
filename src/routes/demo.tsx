@@ -422,7 +422,7 @@ function DemoPage() {
         </p>
       </div>
 
-      <div className="flex gap-8">
+      <div className="flex flex-col gap-8 md:flex-row">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -435,7 +435,7 @@ function DemoPage() {
           <Button type="submit">Submit</Button>
         </form>
 
-        <aside className="w-64 shrink-0 space-y-1.5">
+        <aside className="shrink-0 space-y-1.5 md:w-64">
           <p className="mb-3 text-xs font-medium tracking-wide text-muted-foreground uppercase">
             Features used
           </p>
