@@ -32,7 +32,7 @@ jobs:
         run: npm run api:generate
 
       - name: Build
-        run: npm run build -- --base=/openapi-tanstack-starter/
+        run: npx vite build --base=/openapi-tanstack-starter/ && npx tsc -b
 
       - name: Copy index.html to 404.html for SPA routing
         run: cp dist/index.html dist/404.html
