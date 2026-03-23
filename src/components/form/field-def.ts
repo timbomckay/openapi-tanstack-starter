@@ -7,9 +7,13 @@ export type FieldType =
   | 'number'
   | 'password'
   | 'textarea'
+  | 'hidden'
+  | 'file'
   | 'select'
+  | 'combobox'
   | 'radio'
   | 'checkbox'
+  | 'switch'
   | 'date'
   | 'repeater';
 
@@ -77,6 +81,8 @@ export interface FieldDef {
   /** Helper text rendered below the control. */
   hint?: string;
   placeholder?: string;
+  /** For type='file': restricts accepted file types (e.g. 'image/*', '.pdf,.docx'). */
+  accept?: string;
   /**
    * Explicit control type. When omitted, DynamicField resolves it:
    *   - options present + multiple → 'checkbox'
@@ -87,8 +93,33 @@ export interface FieldDef {
   type?: FieldType;
   /** When true with options, renders a checkbox group instead of radio/select. */
   multiple?: boolean;
-  /** Options for radio, checkbox, or select. Strings are normalised to { value, label }. */
-  options?: FieldOption[] | string[];
+  /**
+   * Maximum number of items that can be selected. Applies to checkbox groups,
+   * multi-select, and multi-combobox — unselected options are disabled once the
+   * limit is reached. Auto-inferred from `z.array().max(n)` via zodToFields.
+   */
+  maxSelections?: number;
+  /**
+   * Options for radio, checkbox, or select.
+   *
+   * Static forms: pass `FieldOption[]` or `string[]` (strings are normalised to `{ value, label }`).
+   *
+   * Dynamic / queried options: pass a hook-shaped function — TanStack Query hooks
+   * can be called inside it freely since DynamicField calls it at the component's
+   * top level. When a function is provided and no explicit `type` is set, DynamicField
+   * defaults to `'select'` (or `'checkbox'` if `multiple: true`) so the control is
+   * stable while the query loads — no layout shift as the option count changes.
+   *
+   * @example static
+   *   options: ['active', 'inactive']
+   *
+   * @example queried
+   *   options: () => {
+   *     const { data } = useQuery(getTagsOptions({ client }));
+   *     return data?.map(t => ({ value: String(t.id), label: t.name ?? '' })) ?? [];
+   *   }
+   */
+  options?: FieldOption[] | string[] | (() => FieldOption[]) | (() => string[]);
   required?: boolean;
   disabled?: boolean;
   /**
@@ -101,6 +132,12 @@ export interface FieldDef {
    * built-in required check — required runs first, then your custom validator.
    */
   validators?: FieldValidators;
+  /**
+   * Debounce delay in ms for async validators (onChangeAsync / onBlurAsync).
+   * Passed directly to TanStack Form's asyncDebounceMs field option.
+   * Defaults to 300ms when an async validator is present.
+   */
+  asyncDebounceMs?: number;
   /**
    * Show this field only when the referenced field satisfies the condition.
    * Hidden fields are NOT registered in form state.

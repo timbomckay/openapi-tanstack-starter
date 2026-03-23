@@ -23,8 +23,6 @@ export const Route = createFileRoute('/pets/new')({
   component: NewPetPage,
 });
 
-// Pass zPet directly — id, category, tags are auto-skipped (bigint, object, array).
-// photoUrls (ZodArray) is auto-inferred as a repeater field.
 const fields = zodToFields(zPet, {
   name: {
     placeholder: 'Fluffy',
@@ -41,12 +39,7 @@ const fields = zodToFields(zPet, {
   },
   status: { required: true, defaultValue: 'available' },
   photoUrls: { label: 'Photo URLs', addLabel: 'Add photo URL' },
-});
-
-const submitSchema = z.object({
-  name: zPet.shape.name,
-  status: zPet.shape.status.unwrap(),
-  photoUrls: zPet.shape.photoUrls,
+  tags: { addLabel: 'Add tag' },
 });
 
 function NewPetPage() {
@@ -71,9 +64,22 @@ function NewPetPage() {
     fields,
     onSubmit: async ({ value, formApi }) => {
       if (!formApi.state.isValid) return;
-      const result = submitSchema.safeParse(value);
+      // Assign a temporary bigint ID to any new tag that lacks one.
+      // In a real app, tags would come from a getTags() query with real IDs.
+      // Cast to unknown first to bridge Hey API's bigint/number type mismatch
+      // in the generated TS types (the Zod schema correctly uses bigint for int64).
+      const result = zPet.safeParse({
+        ...value,
+        tags: (value as { tags?: { id?: bigint; name?: string }[] }).tags?.map(
+          (t) => ({ ...t, id: t.id ?? BigInt(Date.now()) }),
+        ),
+      });
       if (!result.success) return;
-      mutation.mutate({ body: result.data });
+      mutation.mutate({
+        body: result.data as unknown as Parameters<
+          typeof mutation.mutate
+        >[0]['body'],
+      });
     },
   });
 

@@ -31,7 +31,7 @@ export function RadioGroupField({
     .map((e) => ({ message: String(e) }));
 
   return (
-    <FieldSet>
+    <FieldSet id={field.name}>
       <FieldLegend
         variant="label"
         className={hideLabel ? 'sr-only' : undefined}

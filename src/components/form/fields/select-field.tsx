@@ -27,6 +27,7 @@ interface SelectFieldProps {
   hint?: string;
   multiple?: boolean;
   hideLabel?: boolean;
+  maxSelections?: number;
 }
 
 function renderMultiValue(
@@ -49,6 +50,7 @@ export function SelectField({
   hint,
   multiple,
   hideLabel,
+  maxSelections,
 }: SelectFieldProps) {
   const errors = useFieldContext<string | string[]>()
     .state.meta.errors.filter(Boolean)
@@ -63,6 +65,7 @@ export function SelectField({
         hint={hint}
         errors={errors}
         hideLabel={hideLabel}
+        maxSelections={maxSelections}
       />
     );
   }
@@ -88,6 +91,7 @@ interface InnerProps {
   hint?: string;
   errors: { message: string }[];
   hideLabel?: boolean;
+  maxSelections?: number;
 }
 
 function SingleSelect({
@@ -146,9 +150,11 @@ function MultiSelect({
   hint,
   errors,
   hideLabel,
+  maxSelections,
 }: InnerProps) {
   const field = useFieldContext<string[]>();
   const value = field.state.value ?? [];
+  const atMax = maxSelections !== undefined && value.length >= maxSelections;
 
   return (
     <Field data-invalid={errors.length > 0 || undefined}>
@@ -167,7 +173,11 @@ function MultiSelect({
         </SelectTrigger>
         <SelectContent>
           {items.map((item) => (
-            <SelectItem key={item.value} value={item.value}>
+            <SelectItem
+              key={item.value}
+              value={item.value}
+              disabled={atMax && !value.includes(item.value)}
+            >
               {item.label}
             </SelectItem>
           ))}

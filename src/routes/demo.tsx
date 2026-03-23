@@ -6,9 +6,13 @@ import {
   CalendarIcon,
   ClockCounterClockwiseIcon,
   EyeIcon,
+  FunctionIcon,
   GitBranchIcon,
   MagicWandIcon,
+  MagnifyingGlassIcon,
   PencilSimpleIcon,
+  SpinnerGapIcon,
+  ToggleLeftIcon,
 } from '@phosphor-icons/react';
 import { createFileRoute } from '@tanstack/react-router';
 import { toast } from 'sonner';
@@ -16,12 +20,24 @@ import { toast } from 'sonner';
 import type { FieldDef, RenderItem } from '@/components/form/field-def';
 
 import { FormBuilder } from '@/components/form/form-builder';
+import { FormErrorSummary } from '@/components/form/form-error-summary';
 import { Button } from '@/components/ui/button';
 import { useFieldForm } from '@/hooks/use-field-form';
 
 export const Route = createFileRoute('/demo')({
   component: DemoPage,
 });
+
+const TAKEN_HANDLES = new Set(['taken', 'admin', 'root', 'support']);
+
+async function checkHandleAvailable({ value }: { value: unknown }) {
+  const v = (value as string) ?? '';
+  if (!v) return undefined;
+  await new Promise((r) => setTimeout(r, 600));
+  return TAKEN_HANDLES.has(v.toLowerCase())
+    ? `"${v}" is already taken`
+    : undefined;
+}
 
 const fields: (FieldDef | RenderItem)[] = [
   // Plain required — built-in check only
@@ -70,6 +86,18 @@ const fields: (FieldDef | RenderItem)[] = [
         if (!/^[a-z_]+$/i.test(v)) return 'Letters and underscores only';
         return undefined;
       },
+    },
+  },
+
+  // Async validation — simulated server availability check
+  {
+    name: 'handle',
+    label: 'Handle',
+    placeholder: 'your_handle',
+    hint: 'Availability checked async — try "taken", "admin", or "root".',
+    validators: {
+      onChangeAsync: checkHandleAvailable,
+      onSubmitAsync: checkHandleAvailable,
     },
   },
 
@@ -168,7 +196,7 @@ const fields: (FieldDef | RenderItem)[] = [
         name="displayName"
         validators={{
           onChange: ({ value }: { value: string }) => {
-            return value.length > 0 && value.length < 2
+            return value?.length > 0 && value.length < 2
               ? 'At least 2 characters'
               : undefined;
           },
@@ -224,6 +252,24 @@ const fields: (FieldDef | RenderItem)[] = [
     hint: '7 options + multiple: true → multi-select (above threshold of 6).',
   },
 
+  // Function options — simulates queried/dynamic options (e.g. from useQuery).
+  // DynamicField calls the function at the component's top level, so hooks
+  // (TanStack Query, etc.) can be called freely inside it.
+  {
+    name: 'tags',
+    label: 'Tags',
+    multiple: true,
+    defaultValue: [] as string[],
+    hint: 'Options via function — in a real app this would call useQuery inside the function.',
+    options: () => [
+      { value: 'friendly', label: 'Friendly' },
+      { value: 'playful', label: 'Playful' },
+      { value: 'outdoor', label: 'Outdoor' },
+      { value: 'indoor', label: 'Indoor' },
+      { value: 'trained', label: 'Trained' },
+    ],
+  },
+
   // multiple + ≤ 6 options → checkbox group
   {
     name: 'interests',
@@ -252,6 +298,71 @@ const fields: (FieldDef | RenderItem)[] = [
     type: 'date',
     label: 'End date',
     hint: 'Optional end date.',
+  },
+
+  {
+    render: () => (
+      <div className="border-t pt-4">
+        <p className="text-sm font-medium">Selection controls</p>
+      </div>
+    ),
+  },
+
+  // Switch — boolean toggle
+  {
+    name: 'notifications',
+    type: 'switch',
+    label: 'Enable notifications',
+    hint: 'Boolean toggle — auto-inferred from ZodBoolean, or set explicitly with type: switch.',
+    defaultValue: false,
+  },
+
+  // Single combobox — searchable single select (explicit type)
+  {
+    name: 'timezone',
+    type: 'combobox',
+    label: 'Timezone',
+    hint: 'Explicit type: combobox — searchable single select with clear button.',
+    options: [
+      { value: 'America/New_York', label: 'Eastern Time (ET)' },
+      { value: 'America/Chicago', label: 'Central Time (CT)' },
+      { value: 'America/Denver', label: 'Mountain Time (MT)' },
+      { value: 'America/Los_Angeles', label: 'Pacific Time (PT)' },
+      { value: 'America/Anchorage', label: 'Alaska Time (AKT)' },
+      { value: 'Pacific/Honolulu', label: 'Hawaii Time (HT)' },
+      { value: 'Europe/London', label: 'Greenwich Mean Time (GMT)' },
+      { value: 'Europe/Paris', label: 'Central European Time (CET)' },
+      { value: 'Europe/Helsinki', label: 'Eastern European Time (EET)' },
+      { value: 'Asia/Dubai', label: 'Gulf Standard Time (GST)' },
+      { value: 'Asia/Kolkata', label: 'India Standard Time (IST)' },
+      { value: 'Asia/Bangkok', label: 'Indochina Time (ICT)' },
+      { value: 'Asia/Shanghai', label: 'China Standard Time (CST)' },
+      { value: 'Asia/Tokyo', label: 'Japan Standard Time (JST)' },
+      { value: 'Australia/Sydney', label: 'Australian Eastern Time (AET)' },
+      { value: 'Pacific/Auckland', label: 'New Zealand Time (NZT)' },
+    ],
+  },
+
+  // Multi combobox — chips (explicit type + multiple)
+  {
+    name: 'skills',
+    type: 'combobox',
+    multiple: true,
+    label: 'Skills',
+    hint: 'combobox + multiple: true → chip multi-select with search.',
+    defaultValue: [] as string[],
+    options: [
+      { value: 'react', label: 'React' },
+      { value: 'typescript', label: 'TypeScript' },
+      { value: 'node', label: 'Node.js' },
+      { value: 'python', label: 'Python' },
+      { value: 'graphql', label: 'GraphQL' },
+      { value: 'postgres', label: 'PostgreSQL' },
+      { value: 'docker', label: 'Docker' },
+      { value: 'kubernetes', label: 'Kubernetes' },
+      { value: 'rust', label: 'Rust' },
+      { value: 'go', label: 'Go' },
+    ],
   },
 ];
 
@@ -319,6 +430,7 @@ function DemoPage() {
           }}
           className="min-w-0 flex-1 space-y-6"
         >
+          <FormErrorSummary form={form} fields={fields} />
           <FormBuilder form={form} fields={fields} />
           <Button type="submit">Submit</Button>
         </form>
@@ -341,12 +453,28 @@ function DemoPage() {
             Username — pattern checked only after leaving the field.
           </FeatureCard>
           <FeatureCard
+            icon={SpinnerGapIcon}
+            title="onChangeAsync"
+            badge="validators.onChangeAsync"
+          >
+            Handle — availability checked against a simulated server call.
+            Debounced 300ms automatically.
+          </FeatureCard>
+          <FeatureCard
             icon={GitBranchIcon}
             title="Conditional"
             badge="field.condition"
           >
             Contact details shown based on selected method. Hidden fields never
             block submission.
+          </FeatureCard>
+          <FeatureCard
+            icon={FunctionIcon}
+            title="Function options"
+            badge="options: () => FieldOption[]"
+          >
+            Tags — options resolved at render time, safe to call hooks (e.g.{' '}
+            <code className="text-[10px]">useQuery</code>) inside.
           </FeatureCard>
           <FeatureCard
             icon={MagicWandIcon}
@@ -380,6 +508,23 @@ function DemoPage() {
           >
             Calendar popover — value stored as ISO date string. Validates and
             composes with required like any other field.
+          </FeatureCard>
+          <FeatureCard
+            icon={ToggleLeftIcon}
+            title="Switch"
+            badge="type: 'switch'"
+          >
+            Boolean toggle — horizontal layout with label and hint.
+            Auto-inferred from <code className="text-[10px]">ZodBoolean</code>.
+          </FeatureCard>
+          <FeatureCard
+            icon={MagnifyingGlassIcon}
+            title="Combobox"
+            badge="type: 'combobox'"
+          >
+            Searchable single select with clear, and chip multi-select when{' '}
+            <code className="text-[10px]">multiple: true</code>. Auto-promoted
+            above <code className="text-[10px]">comboboxThreshold</code>.
           </FeatureCard>
         </aside>
       </div>

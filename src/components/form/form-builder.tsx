@@ -48,6 +48,12 @@ interface FormBuilderProps {
   fields: (FieldDef | RenderItem<BuildableForm>)[];
   /** Options count threshold for radio → select promotion. Defaults to 6. */
   threshold?: number;
+  /**
+   * Options count threshold for select → combobox promotion.
+   * Defaults to `threshold * 4` inside DynamicField.
+   * Function-based options always resolve to combobox regardless of this value.
+   */
+  comboboxThreshold?: number;
 }
 
 function isEmpty(value: unknown): boolean {
@@ -62,11 +68,12 @@ function isEmpty(value: unknown): boolean {
 function composeValidator(
   required: boolean | undefined,
   custom: ((ctx: { value: unknown }) => string | undefined) | undefined,
+  isUnset: (value: unknown) => boolean = isEmpty,
 ): ((ctx: { value: unknown }) => string | undefined) | undefined {
   if (!required && !custom) return undefined;
   if (required && custom)
-    return (ctx) => (isEmpty(ctx.value) ? 'Required' : custom(ctx));
-  if (required) return (ctx) => (isEmpty(ctx.value) ? 'Required' : undefined);
+    return (ctx) => (isUnset(ctx.value) ? 'Required' : custom(ctx));
+  if (required) return (ctx) => (isUnset(ctx.value) ? 'Required' : undefined);
   return custom;
 }
 
@@ -89,32 +96,101 @@ function wrapWithCondition(
   };
 }
 
-export function FormBuilder({ form, fields, threshold = 6 }: FormBuilderProps) {
+function wrapWithConditionAsync(
+  validator:
+    | ((ctx: { value: unknown }) => Promise<string | undefined>)
+    | undefined,
+  condition: FieldCondition,
+  getFieldValue: (name: string) => unknown,
+): ((ctx: { value: unknown }) => Promise<string | undefined>) | undefined {
+  if (!validator) return undefined;
+  return async (ctx) => {
+    if (!evaluateCondition(getFieldValue(condition.name), condition))
+      return undefined;
+    return validator(ctx);
+  };
+}
+
+export function FormBuilder({
+  form,
+  fields,
+  threshold = 6,
+  comboboxThreshold = threshold * 4,
+}: FormBuilderProps) {
   const getFieldValue = (name: string) => form.getFieldValue(name as never);
 
   const buildValidators = (fieldDef: FieldDef) => {
-    if (fieldDef.readonly) return undefined;
+    if (fieldDef.readonly || fieldDef.type === 'hidden') return undefined;
+    // For switches, required means must be checked (true) — false is not "empty"
+    // by the default isEmpty check, so we use a type-specific sentinel.
+    const isUnset =
+      fieldDef.type === 'switch' ? (v: unknown) => v !== true : isEmpty;
     const onChange = composeValidator(
       fieldDef.required,
       fieldDef.validators?.onChange,
+      isUnset,
     );
     const onBlur = fieldDef.validators?.onBlur;
     const onSubmit = fieldDef.validators?.onSubmit;
+    const onChangeAsync = fieldDef.validators?.onChangeAsync;
+    const onBlurAsync = fieldDef.validators?.onBlurAsync;
+    const onSubmitAsync = fieldDef.validators?.onSubmitAsync;
 
     if (!fieldDef.condition) {
-      if (!onChange && !onBlur && !onSubmit) return undefined;
-      return { onChange, onBlur, onSubmit };
+      if (
+        !onChange &&
+        !onBlur &&
+        !onSubmit &&
+        !onChangeAsync &&
+        !onBlurAsync &&
+        !onSubmitAsync
+      )
+        return undefined;
+      return {
+        onChange,
+        onBlur,
+        onSubmit,
+        onChangeAsync,
+        onBlurAsync,
+        onSubmitAsync,
+      };
     }
 
     const { condition } = fieldDef;
     const condOnChange = wrapWithCondition(onChange, condition, getFieldValue);
     const condOnBlur = wrapWithCondition(onBlur, condition, getFieldValue);
     const condOnSubmit = wrapWithCondition(onSubmit, condition, getFieldValue);
-    if (!condOnChange && !condOnBlur && !condOnSubmit) return undefined;
+    const condOnChangeAsync = wrapWithConditionAsync(
+      onChangeAsync,
+      condition,
+      getFieldValue,
+    );
+    const condOnBlurAsync = wrapWithConditionAsync(
+      onBlurAsync,
+      condition,
+      getFieldValue,
+    );
+    const condOnSubmitAsync = wrapWithConditionAsync(
+      onSubmitAsync,
+      condition,
+      getFieldValue,
+    );
+    if (
+      !condOnChange &&
+      !condOnBlur &&
+      !condOnSubmit &&
+      !condOnChangeAsync &&
+      !condOnBlurAsync &&
+      !condOnSubmitAsync
+    )
+      return undefined;
     return {
       onChange: condOnChange,
       onBlur: condOnBlur,
       onSubmit: condOnSubmit,
+      onChangeAsync: condOnChangeAsync,
+      onBlurAsync: condOnBlurAsync,
+      onSubmitAsync: condOnSubmitAsync,
     };
   };
 
@@ -133,6 +209,13 @@ export function FormBuilder({ form, fields, threshold = 6 }: FormBuilderProps) {
 
         // Repeater fields need mode="array" and the form instance for sub-fields.
         // AppField does not set formContext, so we pass form explicitly.
+        const asyncDebounceMs =
+          fieldDef.asyncDebounceMs ??
+          ((fieldDef.validators?.onChangeAsync ??
+          fieldDef.validators?.onBlurAsync)
+            ? 300
+            : undefined);
+
         if (fieldDef.type === 'repeater') {
           const repeaterCondition = fieldDef.condition;
           const repeaterContent = !repeaterCondition
@@ -156,6 +239,7 @@ export function FormBuilder({ form, fields, threshold = 6 }: FormBuilderProps) {
               name={fieldDef.name as never}
               mode="array"
               validators={validators}
+              asyncDebounceMs={asyncDebounceMs}
             >
               {repeaterContent}
             </form.AppField>
@@ -168,13 +252,21 @@ export function FormBuilder({ form, fields, threshold = 6 }: FormBuilderProps) {
               key={fieldDef.name}
               name={fieldDef.name as never}
               validators={validators}
+              asyncDebounceMs={asyncDebounceMs}
             >
               {(f: {
                 DynamicField: (p: {
                   field: FieldDef;
                   threshold?: number;
+                  comboboxThreshold?: number;
                 }) => ReactNode;
-              }) => <f.DynamicField field={fieldDef} threshold={threshold} />}
+              }) => (
+                <f.DynamicField
+                  field={fieldDef}
+                  threshold={threshold}
+                  comboboxThreshold={comboboxThreshold}
+                />
+              )}
             </form.AppField>
           );
         }
@@ -185,6 +277,7 @@ export function FormBuilder({ form, fields, threshold = 6 }: FormBuilderProps) {
             key={fieldDef.name}
             name={fieldDef.name as never}
             validators={validators}
+            asyncDebounceMs={asyncDebounceMs}
           >
             {(f: {
               DynamicField: (p: {

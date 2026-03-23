@@ -31,6 +31,20 @@ type InferredProps = Pick<
   'type' | 'options' | 'multiple' | 'defaultValue' | 'fields'
 >;
 
+/**
+ * Extract the max length constraint from a ZodArray if present.
+ * Zod v4 stores constraints in `_def.checks[n]._zod.def`.
+ */
+function arrayMaxLength(schema: AnyZodType): number | undefined {
+  if (!(schema instanceof z.ZodArray)) return undefined;
+  const checks = ((schema as z.ZodArray<AnyZodType>)._def.checks ??
+    []) as Array<{
+    _zod?: { def?: { check?: string; maximum?: number } };
+  }>;
+  return checks.find((c) => c._zod?.def?.check === 'max_length')?._zod?.def
+    ?.maximum;
+}
+
 /** Map a Zod inner type to FieldDef props. Returns null to skip unsupported types. */
 function inferProps(
   inner: AnyZodType,
@@ -45,8 +59,18 @@ function inferProps(
     return { type: 'text', defaultValue: '' };
   }
 
+  if (inner instanceof z.ZodBoolean) {
+    return { type: 'switch', defaultValue: optional ? undefined : false };
+  }
+
   if (inner instanceof z.ZodNumber) {
     return { type: 'number', defaultValue: optional ? undefined : 0 };
+  }
+
+  if (inner instanceof z.ZodBigInt) {
+    // int64 fields (server-generated IDs) — hidden by default, no UI rendered.
+    // Override defaultValue when editing: id: { defaultValue: record.id }
+    return { type: 'hidden', defaultValue: undefined };
   }
 
   if (inner instanceof z.ZodEnum) {
@@ -180,16 +204,36 @@ export function zodToFields<T extends z.ZodRawShape>(
       },
     };
 
+    // When an override supplies options (static or function) without an explicit
+    // type, clear the inferred type and repeater fields so DynamicField can
+    // resolve the correct control (radio/checkbox/select/combobox) from the
+    // options rather than being locked in as a repeater.
+    const inferredOverride =
+      rest.options && !rest.type
+        ? { ...inferred, type: undefined, fields: undefined }
+        : inferred;
+
     const field: FieldDef = {
       name,
       label: labelFromName(name),
       required: !optional,
-      ...inferred,
+      ...inferredOverride,
       validators: autoValidator,
       // Spread overrides last so callers can replace any inferred property,
       // including validators (to swap out the auto-wired one entirely).
       ...rest,
     };
+
+    // Infer maxSelections from ZodArray.max() for multi-option fields.
+    // Only applies when options are present (i.e. not a repeater).
+    if (
+      inner instanceof z.ZodArray &&
+      field.options != null &&
+      field.maxSelections == null
+    ) {
+      const max = arrayMaxLength(inner);
+      if (max != null) field.maxSelections = max;
+    }
 
     fields.push(field);
   }

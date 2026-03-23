@@ -16,6 +16,7 @@ interface CheckboxGroupFieldProps {
   required?: boolean;
   hint?: string;
   hideLabel?: boolean;
+  maxSelections?: number;
 }
 
 export function CheckboxGroupField({
@@ -24,6 +25,7 @@ export function CheckboxGroupField({
   required,
   hint,
   hideLabel,
+  maxSelections,
 }: CheckboxGroupFieldProps) {
   const field = useFieldContext<string[]>();
   const errors = field.state.meta.errors
@@ -38,7 +40,7 @@ export function CheckboxGroupField({
   }
 
   return (
-    <FieldSet>
+    <FieldSet id={field.name}>
       <FieldLegend
         variant="label"
         className={hideLabel ? 'sr-only' : undefined}
@@ -55,6 +57,11 @@ export function CheckboxGroupField({
               onCheckedChange={(checked) => toggle(opt.value, !!checked)}
               onBlur={field.handleBlur}
               aria-invalid={errors.length > 0}
+              disabled={
+                maxSelections !== undefined &&
+                !selected.includes(opt.value) &&
+                selected.length >= maxSelections
+              }
             />
             <Label htmlFor={`${field.name}-${opt.value}`}>{opt.label}</Label>
           </div>
