@@ -1,4 +1,4 @@
-import React from 'react';
+import type { ColumnDef } from '@tanstack/react-table';
 
 import {
   ArrowRightIcon,
@@ -20,6 +20,8 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { toast } from 'sonner';
+
+import type { Pet } from '@/api/petstore/generated/types.gen';
 
 import { petstoreClient } from '@/api/petstore/client';
 import { findPetsByStatusOptions } from '@/api/petstore/generated/@tanstack/react-query.gen';
@@ -49,7 +51,7 @@ const demoColumns = zodToColumns(zPet, {
       ),
   },
   photoUrls: false,
-});
+}) as ColumnDef<Pet>[];
 
 const demoFields = zodToFields(zPet, {
   id: { skip: true },
