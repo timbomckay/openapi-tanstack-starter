@@ -292,6 +292,53 @@ const columns: ColumnDef<MyRow>[] = [
 <DataTable columns={columns} data={rows} isLoading={isLoading} />
 ```
 
+### Deriving columns from a Zod schema (zodToColumns)
+
+`zodToColumns` mirrors `zodToFields` — it reads a `z.ZodObject` schema and
+returns a `ColumnDef[]` array ready to hand to `<DataTable>`.
+
+**What is inferred automatically:**
+
+| Zod type                     | Cell renderer                   | Sortable |
+| ---------------------------- | ------------------------------- | -------- |
+| `z.string()`                 | `text`                          | yes      |
+| `z.string().email()`         | `text`                          | yes      |
+| `z.string().date/datetime()` | `date` (toLocaleDateString)     | yes      |
+| `z.number()`                 | `number` (locale fmt)           | yes      |
+| `z.bigint()`                 | `mono` (IDs / codes)            | yes      |
+| `z.boolean()`                | `boolean` (check / —)           | no       |
+| `z.enum([…])`                | `badge` (outline)               | yes      |
+| `z.array(scalar)`            | `badges` (pill list)            | no       |
+| `z.array(z.object({…}))`     | `badges` (reads `.name`)        | no       |
+| `z.object({…})`              | **skipped** — override required | —        |
+
+```tsx
+import { zodToColumns } from '@/components/data-table/zod-to-columns';
+import { zPet } from '@/api/petstore/generated/zod.gen';
+import { DataTable } from '@/components/data-table/data-table';
+
+// Zero-config: all columns inferred
+const columns = zodToColumns(zPet);
+
+// With overrides
+const columns = zodToColumns(zPet, {
+  id: { header: 'ID' }, // rename header
+  photoUrls: false, // hide column
+  status: { cellType: 'badge' }, // swap renderer
+  category: {
+    // custom cell (object field)
+    header: 'Category',
+    cell: ({ row }) => row.original.category?.name ?? '—',
+  },
+});
+
+<DataTable columns={columns} data={pets} isLoading={isLoading} />;
+```
+
+Available `cellType` values: `text` | `number` | `mono` | `boolean` | `badge` | `badges` | `date`
+
+Pass `cell` (full TanStack cell function) to take complete control of any cell.
+
 ---
 
 ## Conventions

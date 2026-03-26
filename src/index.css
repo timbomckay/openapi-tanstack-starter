@@ -127,3 +127,13 @@
     @apply font-sans;
   }
 }
+
+/* Shiki dual-theme: activate the dark variant when .dark is on <html> */
+.dark .shiki,
+.dark .shiki code {
+  background-color: var(--shiki-dark-bg) !important;
+  color: var(--shiki-dark) !important;
+}
+.dark .shiki span {
+  color: var(--shiki-dark) !important;
+}

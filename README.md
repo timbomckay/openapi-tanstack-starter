@@ -6,21 +6,21 @@ A batteries-included React starter for building data-driven apps against OpenAPI
 
 ## Stack
 
-| Layer | Tool |
-|---|---|
-| Build | Vite + `@vitejs/plugin-react` |
-| Language | TypeScript (strict) |
-| UI | React 19 |
-| Components | shadcn/ui (`base-vega`) + Base UI |
-| Styling | Tailwind CSS v4 |
-| Routing | TanStack Router v1 (file-based) |
-| Server state | TanStack Query v5 |
-| Forms | TanStack Form v1 |
-| Tables | TanStack Table v8 |
-| API client | Hey API (`@hey-api/openapi-ts`) |
-| Validation | Zod v4 |
-| Testing | Vitest + Testing Library |
-| Linting | oxlint |
+| Layer        | Tool                              |
+| ------------ | --------------------------------- |
+| Build        | Vite + `@vitejs/plugin-react`     |
+| Language     | TypeScript (strict)               |
+| UI           | React 19                          |
+| Components   | shadcn/ui (`base-vega`) + Base UI |
+| Styling      | Tailwind CSS v4                   |
+| Routing      | TanStack Router v1 (file-based)   |
+| Server state | TanStack Query v5                 |
+| Forms        | TanStack Form v1                  |
+| Tables       | TanStack Table v8                 |
+| API client   | Hey API (`@hey-api/openapi-ts`)   |
+| Validation   | Zod v4                            |
+| Testing      | Vitest + Testing Library          |
+| Linting      | oxlint                            |
 
 ## Getting started
 

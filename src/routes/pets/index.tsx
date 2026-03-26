@@ -2,16 +2,24 @@ import { useState } from 'react';
 
 import type { ColumnDef } from '@tanstack/react-table';
 
-import { PlusCircleIcon, ArrowSquareOutIcon } from '@phosphor-icons/react';
+import {
+  PlusCircleIcon,
+  ArrowSquareOutIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  XCircleIcon,
+} from '@phosphor-icons/react';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
+import * as z from 'zod';
 
 import type { Pet } from '@/api/petstore/generated/types.gen';
 
 import { petstoreClient } from '@/api/petstore/client';
 import { findPetsByStatusOptions } from '@/api/petstore/generated/@tanstack/react-query.gen';
+import { zPet } from '@/api/petstore/generated/zod.gen';
 import { DataTable } from '@/components/data-table/data-table';
-import { Badge } from '@/components/ui/badge';
+import { zodToColumns } from '@/components/data-table/zod-to-columns';
 import { buttonVariants } from '@/components/ui/button';
 import {
   Select,
@@ -23,85 +31,40 @@ import {
 import { cn } from '@/lib/utils';
 
 export const Route = createFileRoute('/pets/')({
+  validateSearch: z.object({
+    status: z
+      .enum(['available', 'pending', 'sold'])
+      .optional()
+      .catch('available'),
+  }),
   component: PetsPage,
 });
 
-type PetStatus = 'available' | 'pending' | 'sold';
-
-const statusVariantMap: Record<
-  PetStatus,
-  'default' | 'secondary' | 'destructive'
-> = {
-  available: 'default',
-  pending: 'secondary',
-  sold: 'destructive',
-};
+type PetStatus = NonNullable<z.infer<typeof zPet>['status']>;
+const petStatuses = zPet.shape.status.unwrap().options;
 
 const columns: ColumnDef<Pet>[] = [
-  {
-    accessorKey: 'id',
-    header: 'ID',
-    cell: ({ row }) => (
-      <span className="font-mono text-xs text-muted-foreground">
-        {row.getValue('id')}
-      </span>
-    ),
-  },
-  {
-    accessorKey: 'name',
-    header: 'Name',
-    cell: ({ row }) => (
-      <span className="font-medium">{row.getValue('name')}</span>
-    ),
-  },
-  {
-    id: 'category',
-    header: 'Category',
-    cell: ({ row }) => {
-      const category = row.original.category;
-      return category ? (
-        <span className="text-sm text-muted-foreground">{category.name}</span>
-      ) : (
-        <span className="text-sm text-muted-foreground/40">—</span>
-      );
+  ...(zodToColumns(zPet, {
+    name: { grow: true },
+    photoUrls: false,
+    status: {
+      badge: {
+        variants: {
+          available: 'default',
+          pending: 'secondary',
+          sold: 'destructive',
+        },
+        icons: {
+          available: CheckCircleIcon,
+          pending: ClockIcon,
+          sold: XCircleIcon,
+        },
+      },
     },
-  },
-  {
-    accessorKey: 'status',
-    header: 'Status',
-    cell: ({ row }) => {
-      const status = row.getValue<PetStatus>('status');
-      return status ? (
-        <Badge variant={statusVariantMap[status] ?? 'secondary'}>
-          {status}
-        </Badge>
-      ) : null;
-    },
-  },
-  {
-    id: 'tags',
-    header: 'Tags',
-    cell: ({ row }) => {
-      const tags = row.original.tags ?? [];
-      return (
-        <div className="flex flex-wrap gap-1">
-          {tags.slice(0, 3).map((tag) => (
-            <Badge key={tag.id} variant="outline" className="text-xs">
-              {tag.name}
-            </Badge>
-          ))}
-          {tags.length > 3 && (
-            <Badge variant="outline" className="text-xs">
-              +{tags.length - 3}
-            </Badge>
-          )}
-        </div>
-      );
-    },
-  },
+  }) as ColumnDef<Pet>[]),
   {
     id: 'actions',
-    cell: ({ row }) => (
+    cell: ({ row }: { row: { original: Pet } }) => (
       <Link
         to="/pets/$petId"
         params={{ petId: String(row.original.id) }}
@@ -117,7 +80,8 @@ const columns: ColumnDef<Pet>[] = [
 ];
 
 function PetsPage() {
-  const [status, setStatus] = useState<PetStatus>('available');
+  const { status: searchStatus } = Route.useSearch();
+  const [status, setStatus] = useState<PetStatus>(searchStatus ?? 'available');
 
   const { data, isLoading, isError } = useQuery(
     findPetsByStatusOptions({ client: petstoreClient, query: { status } }),
@@ -150,9 +114,11 @@ function PetsPage() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="available">Available</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="sold">Sold</SelectItem>
+            {petStatuses.map((s) => (
+              <SelectItem key={s} value={s}>
+                {s.charAt(0).toUpperCase() + s.slice(1)}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
