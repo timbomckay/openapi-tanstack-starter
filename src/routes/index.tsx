@@ -31,9 +31,8 @@ export const Route = createFileRoute('/')({
 // Distinct semantic colors — override the all-blue chart palette
 // ---------------------------------------------------------------------------
 
-// oklch values chosen to be clearly distinct and readable in both themes
 const COLORS = {
-  available: 'oklch(0.65 0.18 150)', // green — matches primary
+  available: 'oklch(0.65 0.18 150)', // green
   pending: 'oklch(0.75 0.16 75)', // amber
   sold: 'oklch(0.6  0.16 255)', // indigo/blue
 } as const;
@@ -63,7 +62,7 @@ const statusMeta = {
 } as const;
 
 // ---------------------------------------------------------------------------
-// Stat card
+// Stat card — compact horizontal layout for use in a 3-up row
 // ---------------------------------------------------------------------------
 
 function StatCard({
@@ -71,13 +70,11 @@ function StatCard({
   count,
   total,
   loading,
-  className = '',
 }: {
   status: 'available' | 'pending' | 'sold';
   count: number | undefined;
   total: number;
   loading: boolean;
-  className?: string;
 }) {
   const { icon: Icon, color, description } = statusMeta[status];
   const label = status.charAt(0).toUpperCase() + status.slice(1);
@@ -85,37 +82,28 @@ function StatCard({
     total > 0 && count != null ? Math.round((count / total) * 100) : null;
 
   return (
-    <Link
-      to="/pets"
-      search={{ status }}
-      className={`group flex flex-col ${className}`}
-    >
-      <Card className="relative flex flex-1 flex-col overflow-hidden transition-colors hover:bg-muted/40">
-        {/* Coloured left accent bar */}
+    <Link to="/pets" search={{ status }} className="group">
+      <Card className="relative h-full overflow-hidden transition-colors hover:bg-muted/40">
         <span
           className="absolute inset-y-0 left-0 w-1 rounded-l-xl"
           style={{ background: color }}
         />
-
-        <CardHeader className="flex flex-row items-start justify-between pb-1 pl-5">
-          <div className="space-y-0.5">
-            <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-              {label}
-            </p>
-          </div>
+        <CardHeader className="flex flex-row items-start justify-between pb-2 pl-5">
+          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+            {label}
+          </p>
           <Icon
-            className="size-5 shrink-0 transition-transform group-hover:scale-110"
+            className="size-4 shrink-0 transition-transform group-hover:scale-110"
             weight="fill"
             style={{ color }}
           />
         </CardHeader>
-
-        <CardContent className="flex flex-1 flex-col justify-between pl-5">
+        <CardContent className="pl-5">
           {loading ? (
-            <Skeleton className="mb-2 h-9 w-20" />
+            <Skeleton className="mb-1 h-8 w-16" />
           ) : (
             <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-bold tabular-nums">
+              <span className="text-3xl font-bold tabular-nums">
                 {count ?? '—'}
               </span>
               {pct != null && (
@@ -125,13 +113,10 @@ function StatCard({
               )}
             </div>
           )}
-
-          <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+          <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
             {description}
             <ArrowRightIcon className="size-3 opacity-0 transition-opacity group-hover:opacity-60" />
           </p>
-
-          {/* Mini proportion bar */}
           <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-muted">
             <div
               className="h-full rounded-full transition-all duration-500"
@@ -168,28 +153,23 @@ function InventoryDonut({
   ];
 
   return (
-    <Card className="flex flex-col">
+    <Card className="flex h-full flex-col">
       <CardHeader className="pb-0">
         <CardTitle className="text-base">Inventory breakdown</CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-1 flex-col justify-center">
+      <CardContent className="flex flex-1 items-center justify-center">
         {loading ? (
-          <div className="flex justify-center py-6">
-            <Skeleton className="size-[180px] rounded-full" />
-          </div>
+          <Skeleton className="size-[180px] rounded-full" />
         ) : (
-          <ChartContainer
-            config={chartConfig}
-            className="mx-auto h-[220px] w-full"
-          >
+          <ChartContainer config={chartConfig} className="h-[240px] w-full">
             <PieChart>
               <ChartTooltip content={<ChartTooltipContent hideLabel />} />
               <Pie
                 data={chartData}
                 dataKey="count"
                 nameKey="status"
-                innerRadius={68}
-                outerRadius={90}
+                innerRadius={72}
+                outerRadius={96}
                 strokeWidth={2}
               >
                 <Label
@@ -271,7 +251,7 @@ function DashboardPage() {
     availableQuery.isLoading || pendingQuery.isLoading || soldQuery.isLoading;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -286,35 +266,32 @@ function DashboardPage() {
         </Link>
       </div>
 
-      {/* Main grid — stat cards + chart side by side at md+ */}
-      <div className="grid gap-4 md:grid-cols-5">
-        {/* Stat cards — stack on the left (2 cols), stretch to match chart height */}
-        <div className="flex h-full flex-col gap-4 md:col-span-2">
-          <StatCard
-            status="available"
-            count={counts.available}
-            total={total}
-            loading={availableQuery.isLoading}
-            className="flex-1"
-          />
-          <StatCard
-            status="pending"
-            count={counts.pending}
-            total={total}
-            loading={pendingQuery.isLoading}
-            className="flex-1"
-          />
-          <StatCard
-            status="sold"
-            count={counts.sold}
-            total={total}
-            loading={soldQuery.isLoading}
-            className="flex-1"
-          />
-        </div>
+      {/* Stat cards — 3 columns */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        <StatCard
+          status="available"
+          count={counts.available}
+          total={total}
+          loading={availableQuery.isLoading}
+        />
+        <StatCard
+          status="pending"
+          count={counts.pending}
+          total={total}
+          loading={pendingQuery.isLoading}
+        />
+        <StatCard
+          status="sold"
+          count={counts.sold}
+          total={total}
+          loading={soldQuery.isLoading}
+        />
+      </div>
 
-        {/* Donut chart — right (3 cols) */}
-        <div className="md:col-span-3">
+      {/* Chart + actions row */}
+      <div className="grid gap-4 md:grid-cols-3">
+        {/* Donut — spans 2 columns */}
+        <div className="md:col-span-2">
           <InventoryDonut
             available={counts.available}
             pending={counts.pending}
@@ -322,49 +299,49 @@ function DashboardPage() {
             loading={isLoading}
           />
         </div>
-      </div>
 
-      {/* Action cards */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Card className="group">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <PawPrintIcon className="size-4 text-primary" weight="fill" />
-              Browse inventory
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <p className="text-sm text-muted-foreground">
-              Filter, sort, and inspect all pets across every status.
-            </p>
-            <Link
-              to="/pets"
-              search={{ status: 'available' }}
-              className={buttonVariants({ variant: 'outline', size: 'sm' })}
-            >
-              View all pets
-              <ArrowRightIcon className="ml-1.5 size-3.5" />
-            </Link>
-          </CardContent>
-        </Card>
+        {/* Action cards — stacked in the 3rd column */}
+        <div className="flex flex-col gap-4">
+          <Card className="flex-1">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                <PawPrintIcon className="size-4 text-primary" weight="fill" />
+                Browse inventory
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Filter, sort, and inspect all pets across every status.
+              </p>
+              <Link
+                to="/pets"
+                search={{ status: 'available' }}
+                className={buttonVariants({ variant: 'outline', size: 'sm' })}
+              >
+                View all pets
+                <ArrowRightIcon className="ml-1.5 size-3.5" />
+              </Link>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <PlusCircleIcon className="size-4 text-primary" weight="fill" />
-              Add new pet
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <p className="text-sm text-muted-foreground">
-              Register a new pet with name, status, and tags.
-            </p>
-            <Link to="/pets/new" className={buttonVariants({ size: 'sm' })}>
-              Add pet
-              <ArrowRightIcon className="ml-1.5 size-3.5" />
-            </Link>
-          </CardContent>
-        </Card>
+          <Card className="flex-1">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                <PlusCircleIcon className="size-4 text-primary" weight="fill" />
+                Add new pet
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Register a new pet with name, status, and tags.
+              </p>
+              <Link to="/pets/new" className={buttonVariants({ size: 'sm' })}>
+                Add pet
+                <ArrowRightIcon className="ml-1.5 size-3.5" />
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
