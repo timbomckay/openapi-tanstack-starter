@@ -118,7 +118,6 @@ function RadialChartInner<T extends Record<string, unknown>>({
             />
             <RadialBar
               dataKey="count"
-              nameKey="key"
               background
               isAnimationActive={animate}
               onMouseEnter={(data) => {
