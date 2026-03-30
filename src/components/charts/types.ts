@@ -110,7 +110,11 @@ export interface TimeSeriesChartProps<
 export type ChartProps<
   T extends Record<string, unknown> = Record<string, unknown>,
 > =
-  | ({ type: 'donut' | 'pie' } & DistributionChartProps<T>)
+  | ({
+      type: 'donut' | 'pie';
+      totalLabel?: string;
+      showTotal?: boolean;
+    } & DistributionChartProps<T>)
   | ({ type: 'bar' } & DistributionChartProps<T>)
   | ({ type: 'radar' } & DistributionChartProps<T>)
   | ({ type: 'radial' } & DistributionChartProps<T>)

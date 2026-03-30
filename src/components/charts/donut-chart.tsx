@@ -62,7 +62,7 @@ function DonutChartInner<T extends Record<string, unknown>>({
         field: sourceProps.field!,
       };
 
-  const { chartData, chartConfig, total } = useMemo(
+  const { chartData, chartConfig } = useMemo(
     () => buildDistributionData(source, { keys, colors, labels }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
@@ -142,16 +142,19 @@ function DonutChartInner<T extends Record<string, unknown>>({
               strokeWidth={2}
               isAnimationActive={animate}
               shape={sectorShape}
-              onMouseEnter={(data) =>
-                interactive && startHover((data as { cssKey: string }).cssKey)
-              }
-              onMouseLeave={() => interactive && endHover()}
-              onClick={(data) =>
+              onMouseEnter={(data) => {
+                if (interactive)
+                  startHover((data as unknown as { cssKey: string }).cssKey);
+              }}
+              onMouseLeave={() => {
+                if (interactive) endHover();
+              }}
+              onClick={(data) => {
                 onValueClick?.(
-                  (data as { key: string }).key,
-                  (data as { count: number }).count,
-                )
-              }
+                  (data as unknown as { key: string }).key,
+                  (data as unknown as { count: number }).count,
+                );
+              }}
               style={{ cursor: onValueClick ? 'pointer' : undefined }}
             >
               {showTotal && (

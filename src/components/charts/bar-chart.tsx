@@ -167,16 +167,19 @@ function BarChartInner<T extends Record<string, unknown>>({
               dataKey="count"
               shape={ColoredBar as BarProps['shape']}
               isAnimationActive={animate}
-              onMouseEnter={(data) =>
-                interactive && startHover((data as { cssKey: string }).cssKey)
-              }
-              onMouseLeave={() => interactive && endHover()}
-              onClick={(data) =>
+              onMouseEnter={(data) => {
+                if (interactive)
+                  startHover((data as unknown as { cssKey: string }).cssKey);
+              }}
+              onMouseLeave={() => {
+                if (interactive) endHover();
+              }}
+              onClick={(data) => {
                 onValueClick?.(
-                  (data as { key: string }).key,
-                  (data as { count: number }).count,
-                )
-              }
+                  (data as unknown as { key: string }).key,
+                  (data as unknown as { count: number }).count,
+                );
+              }}
               style={{ cursor: onValueClick ? 'pointer' : undefined }}
             />
           </RechartsBarChart>
