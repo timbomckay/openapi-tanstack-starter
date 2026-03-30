@@ -7,20 +7,13 @@ import {
 } from '@phosphor-icons/react';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { Label, Pie, PieChart } from 'recharts';
 
 import { petstoreClient } from '@/api/petstore/client';
 import { findPetsByStatusOptions } from '@/api/petstore/generated/@tanstack/react-query.gen';
+import { zPet } from '@/api/petstore/generated/zod.gen';
+import { DonutChart } from '@/components/charts';
 import { buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from '@/components/ui/chart';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export const Route = createFileRoute('/')({
@@ -36,12 +29,6 @@ const COLORS = {
   pending: 'oklch(0.75 0.16 75)', // amber
   sold: 'oklch(0.6  0.16 255)', // indigo/blue
 } as const;
-
-const chartConfig = {
-  available: { label: 'Available', color: COLORS.available },
-  pending: { label: 'Pending', color: COLORS.pending },
-  sold: { label: 'Sold', color: COLORS.sold },
-} satisfies ChartConfig;
 
 const statusMeta = {
   available: {
@@ -130,94 +117,6 @@ function StatCard({
 }
 
 // ---------------------------------------------------------------------------
-// Donut chart
-// ---------------------------------------------------------------------------
-
-function InventoryDonut({
-  available,
-  pending,
-  sold,
-  loading,
-}: {
-  available: number;
-  pending: number;
-  sold: number;
-  loading: boolean;
-}) {
-  const total = available + pending + sold;
-
-  const chartData = [
-    { status: 'available', count: available, fill: 'var(--color-available)' },
-    { status: 'pending', count: pending, fill: 'var(--color-pending)' },
-    { status: 'sold', count: sold, fill: 'var(--color-sold)' },
-  ];
-
-  return (
-    <Card className="flex h-full flex-col">
-      <CardHeader className="pb-0">
-        <CardTitle className="text-base">Inventory breakdown</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-1 items-center justify-center">
-        {loading ? (
-          <Skeleton className="size-[180px] rounded-full" />
-        ) : (
-          <ChartContainer config={chartConfig} className="h-[240px] w-full">
-            <PieChart>
-              <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-              <Pie
-                data={chartData}
-                dataKey="count"
-                nameKey="status"
-                innerRadius={72}
-                outerRadius={96}
-                strokeWidth={2}
-              >
-                <Label
-                  content={({ viewBox }) => {
-                    if (!viewBox || !('cx' in viewBox)) return null;
-                    return (
-                      <text
-                        x={viewBox.cx}
-                        y={viewBox.cy}
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                      >
-                        <tspan
-                          x={viewBox.cx}
-                          y={(viewBox.cy ?? 0) - 10}
-                          style={{
-                            fontSize: 28,
-                            fontWeight: 700,
-                            fill: 'currentColor',
-                          }}
-                        >
-                          {total.toLocaleString()}
-                        </tspan>
-                        <tspan
-                          x={viewBox.cx}
-                          y={(viewBox.cy ?? 0) + 16}
-                          style={{
-                            fontSize: 12,
-                            fill: 'var(--muted-foreground)',
-                          }}
-                        >
-                          total pets
-                        </tspan>
-                      </text>
-                    );
-                  }}
-                />
-              </Pie>
-              <ChartLegend content={<ChartLegendContent nameKey="status" />} />
-            </PieChart>
-          </ChartContainer>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 
@@ -292,12 +191,18 @@ function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-3">
         {/* Donut — spans 2 columns */}
         <div className="md:col-span-2">
-          <InventoryDonut
-            available={counts.available}
-            pending={counts.pending}
-            sold={counts.sold}
-            loading={isLoading}
-          />
+          {isLoading ? (
+            <Skeleton className="h-80 w-full rounded-xl" />
+          ) : (
+            <DonutChart
+              counts={counts}
+              keys={zPet.shape.status}
+              colors={COLORS}
+              title="Inventory breakdown"
+              totalLabel="total pets"
+              className="h-full"
+            />
+          )}
         </div>
 
         {/* Action cards — stacked in the 3rd column */}

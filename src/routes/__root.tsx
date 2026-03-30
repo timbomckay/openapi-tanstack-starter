@@ -35,6 +35,12 @@ function RootLayout() {
                 Form demo
               </Link>
               <Link
+                to="/charts"
+                className="text-muted-foreground transition-colors hover:text-foreground [&.active]:font-medium [&.active]:text-foreground"
+              >
+                Charts
+              </Link>
+              <Link
                 to="/pipeline"
                 className="text-muted-foreground transition-colors hover:text-foreground [&.active]:font-medium [&.active]:text-foreground"
               >
